@@ -32,6 +32,13 @@ func TestBytesAsJsonMap(t *testing.T) {
 	}
 }
 
+func TestBytesAsJsonArray(t *testing.T) {
+	_, err := bytesAsJson([]byte(`["qwerty","uiopas","dfghjkl"]`))
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func equivalentString(value string, expected interface{}, t *testing.T) {
 	switch v2 := expected.(type) {
 	case string:

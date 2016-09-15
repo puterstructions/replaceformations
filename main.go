@@ -23,8 +23,15 @@ func bytesAsJson(b []byte) (interface{}, error) {
 			return nil, err
 		}
 		return m, nil
+	case '[':
+		a := []interface{}{}
+		err := json.Unmarshal(b, &a)
+		if err != nil {
+			return nil, err
+		}
+		return a, nil
 	default:
-		return nil, errors.New("Unknown type")
+		return nil, errors.New("Unknown type in json bytes")
 	}
 }
 
