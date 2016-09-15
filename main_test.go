@@ -117,7 +117,7 @@ func TestEquivalent(t *testing.T) {
 	)
 }
 
-func resolver(t *testing.T) func(string) (interface{}, error) {
+func resolver(t *testing.T) Resolver {
 	return func(name string) (interface{}, error) {
 		return asJson([]byte(`{"a":"thing"}`), t), nil
 	}

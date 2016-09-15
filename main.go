@@ -6,6 +6,8 @@ import (
 	"errors"
 )
 
+type Resolver func(string) (interface{}, error)
+
 func bytesAsJson(b []byte) (interface{}, error) {
 	b = bytes.TrimSpace(b)
 	switch b[0] {
@@ -35,7 +37,7 @@ func bytesAsJson(b []byte) (interface{}, error) {
 	}
 }
 
-func replaceMap(m map[string]interface{}, resolver func(string) (interface{}, error)) (interface{}, error) {
+func replaceMap(m map[string]interface{}, resolver Resolver) (interface{}, error) {
 	if len(m) == 1 && m["Ref"] != nil {
 		switch refval := m["Ref"].(type) {
 		case string:
@@ -70,7 +72,7 @@ func replaceMap(m map[string]interface{}, resolver func(string) (interface{}, er
 	return returnable, nil
 }
 
-func replaceArray(ary []interface{}, resolver func(string) (interface{}, error)) (interface{}, error) {
+func replaceArray(ary []interface{}, resolver Resolver) (interface{}, error) {
 	var replaced []interface{} = nil
 	for _, v := range ary {
 		rval, err := replace(v, resolver)
@@ -82,7 +84,7 @@ func replaceArray(ary []interface{}, resolver func(string) (interface{}, error))
 	return replaced, nil
 }
 
-func replace(i interface{}, resolver func(string) (interface{}, error)) (interface{}, error) {
+func replace(i interface{}, resolver Resolver) (interface{}, error) {
 	switch value := i.(type) {
 	case string:
 		return value, nil
@@ -95,7 +97,7 @@ func replace(i interface{}, resolver func(string) (interface{}, error)) (interfa
 	}
 }
 
-func replaceBytes(b []byte, resolver func(string) (interface{}, error)) (interface{}, error) {
+func replaceBytes(b []byte, resolver Resolver) (interface{}, error) {
 	i, err := bytesAsJson(b)
 	if err != nil {
 		return nil, err
