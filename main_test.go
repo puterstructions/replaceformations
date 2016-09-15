@@ -64,14 +64,30 @@ func equivalentMap(value map[string]interface{}, expected interface{}, t *testin
 	}
 }
 
+func equivalentArray(value []interface{}, expected interface{}, t *testing.T) {
+	switch v2 := expected.(type) {
+	case []interface{}:
+		if len(value) != len(v2) {
+			t.Errorf("len(%v) != len(%v)", value, v2)
+		}
+		for i, o := range value {
+			equivalentJson(o, v2[i], t)
+		}
+	default:
+		t.Errorf("%v is not an array", expected)
+	}
+}
+
 func equivalentJson(value interface{}, expected interface{}, t *testing.T) {
 	switch v := value.(type) {
 	case string:
 		equivalentString(v, expected, t)
 	case map[string]interface{}:
 		equivalentMap(v, expected, t)
+	case []interface{}:
+		equivalentArray(v, expected, t)
 	default:
-		t.Errorf("%v is not equivalent to %v", value, expected)
+		t.Errorf("unexpected types for %v and %v", value, expected)
 	}
 }
 
@@ -92,6 +108,11 @@ func TestEquivalent(t *testing.T) {
 	equivalentJson(
 		asJson([]byte(`{"foo":"bar"}`), t),
 		asJson([]byte(`{"foo":"bar"}`), t),
+		t,
+	)
+	equivalentJson(
+		asJson([]byte(`["a1","a2"]`), t),
+		asJson([]byte(`["a1","a2"]`), t),
 		t,
 	)
 }
@@ -190,14 +211,29 @@ func TestIdentityRef(t *testing.T) {
 	)
 }
 
+func TestReplaceArray(t *testing.T) {
+	template := []interface{}{ "a1", "a2", "a3" }
+	replaced, err := replaceArray(template, resolver(t))
+	if err != nil {
+		t.Error(err)
+	}
+
+	expected := asJson([]byte(`["a1","a2","a3"]`), t)
+	equivalentJson(
+		replaced,
+		expected,
+		t,
+	)
+}
+
 func TestReplace(t *testing.T) {
-	template := `{"asdf":{"Ref": {"URI":"componentName"}}}`
+	template := `{"asdf":{"Ref": {"URI":"componentName"}}, "bsdf":[{"Ref": {"URI":"otherComponent"}}]}`
 	replaced, err := replace(asJson([]byte(template), t), resolver(t))
 	if err != nil {
 		t.Error(err)
 	}
 
-	expected := asJson([]byte(`{"asdf":{"a":"thing"}}`), t)
+	expected := asJson([]byte(`{"asdf":{"a":"thing"},"bsdf":[{"a":"thing"}]}`), t)
 	equivalentJson(
 		replaced,
 		expected,

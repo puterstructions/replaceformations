@@ -70,12 +70,26 @@ func replaceMap(m map[string]interface{}, resolver func(string) (interface{}, er
 	return returnable, nil
 }
 
+func replaceArray(ary []interface{}, resolver func(string) (interface{}, error)) (interface{}, error) {
+	var replaced []interface{} = nil
+	for _, v := range ary {
+		rval, err := replace(v, resolver)
+		if err != nil {
+			return nil, err
+		}
+		replaced = append(replaced, rval)
+	}
+	return replaced, nil
+}
+
 func replace(i interface{}, resolver func(string) (interface{}, error)) (interface{}, error) {
 	switch value := i.(type) {
 	case string:
 		return value, nil
 	case map[string]interface{}:
 		return replaceMap(value, resolver)
+	case []interface{}:
+		return replaceArray(value, resolver)
 	default:
 		return nil, nil
 	}
