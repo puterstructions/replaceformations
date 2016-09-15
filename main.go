@@ -46,7 +46,11 @@ func replaceMap(m map[string]interface{}, resolver Resolver) (interface{}, error
 			if len(refval) == 1 && refval["URI"] != nil {
 				switch refurival := refval["URI"].(type) {
 				case string:
-					return resolver(refurival)
+					resolved, err := resolver(refurival)
+					if err != nil {
+						return nil, err
+					}
+					return replace(resolved, resolver)
 				default:
 					return nil, errors.New("unexpected value for Ref:URI")
 				}

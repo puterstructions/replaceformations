@@ -240,3 +240,24 @@ func TestReplace(t *testing.T) {
 		t,
 	)
 }
+
+func TestRecursiveReplace(t *testing.T) {
+	template := `{"Ref": {"URI":"a"}}`
+	r := func(name string) (interface{}, error) {
+		if name == "a" {
+			return map[string]interface{}{"Ref":map[string]interface{}{"URI":"b"}}, nil
+		} else {
+			return "poiuyt", nil
+		}
+	}
+	replaced, err := replaceBytes([]byte(template), r)
+	if err != nil {
+		t.Error(err)
+	}
+
+	equivalentJson(
+		replaced,
+		"poiuyt",
+		t,
+	)
+}
